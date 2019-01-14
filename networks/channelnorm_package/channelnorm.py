@@ -22,8 +22,8 @@ class ChannelNormFunction(Function):
 
         grad_input1 = Variable(input1.new(input1.size()).zero_())
 
-        channelnorm.backward(input1, output, grad_output.data,
-                                              grad_input1.data, ctx.norm_deg)
+        channelnorm_cuda.backward(input1, output, grad_output.data,
+                                  grad_input1.data, ctx.norm_deg)
 
         return grad_input1, None
 

@@ -65,22 +65,22 @@ We've included caffe pre-trained models. Should you use these pre-trained weight
 * [FlowNet2-SD](https://drive.google.com/file/d/1QW03eyYG_vD-dT-Mx4wopYvtPu_msTKn/view?usp=sharing)[173MB]
     
 ## Inference
-    # Example on MPISintel Clean   
-    python main.py --inference --model FlowNet2 --save_flow --inference_dataset MpiSintelClean \
-    --inference_dataset_root /path/to/mpi-sintel/clean/dataset \
-    --resume /path/to/checkpoints 
+    # Example on MPISintel Clean (http://files.is.tue.mpg.de/sintel/MPI-Sintel-complete.zip)
+		python main.py --inference --model FlowNet2 --save_flow --inference_dataset MpiSintelClean \
+		--inference_dataset_root /path/to/MPI-Sintel-complete/training/ \
+		--resume /path/to/FlowNet2_checkpoint.pth.tar
     
 ## Training and validation
 
-    # Example on MPISintel Final and Clean, with L1Loss on FlowNet2 model
-    python main.py --batch_size 8 --model FlowNet2 --loss=L1Loss --optimizer=Adam --optimizer_lr=1e-4 \
-    --training_dataset MpiSintelFinal --training_dataset_root /path/to/mpi-sintel/final/dataset  \
-    --validation_dataset MpiSintelClean --validation_dataset_root /path/to/mpi-sintel/clean/dataset
+    # Example on MPISintel Final and Clean, with L1Loss on FlowNet2 model (http://files.is.tue.mpg.de/sintel/MPI-Sintel-complete.zip)
+		python main.py --batch_size 8 --model FlowNet2 --loss=L1Loss --optimizer=Adam --optimizer_lr=1e-4 \
+		--training_dataset MpiSintelFinal --training_dataset_root /path/to/MPI-Sintel-complete/training/ \
+		--validation_dataset MpiSintelClean --validation_dataset_root /path/to/MPI-Sintel-complete/training/
 
     # Example on MPISintel Final and Clean, with MultiScale loss on FlowNet2C model 
     python main.py --batch_size 8 --model FlowNet2C --optimizer=Adam --optimizer_lr=1e-4 --loss=MultiScale --loss_norm=L1 \
     --loss_numScales=5 --loss_startScale=4 --optimizer_lr=1e-4 --crop_size 384 512 \
-    --training_dataset FlyingChairs --training_dataset_root /path/to/flying-chairs/dataset  \
+    --training_dataset FlyingChairs --training_dataset_root /path/to/flying-chairs/dataset \
     --validation_dataset MpiSintelClean --validation_dataset_root /path/to/mpi-sintel/clean/dataset
     
 ## Results on MPI-Sintel
