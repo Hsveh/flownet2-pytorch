@@ -325,7 +325,14 @@ class ImagesFromFolder(data.Dataset):
     self.render_size = args.inference_size
     self.replicates = replicates
 
-    images = sorted( glob( join(root, '*.' + iext) ) )
+    images_ = glob(join(root, '*.' + iext))
+    images__ = []
+    for i in images_:
+        images__.append(int(os.path.basename(i)[:-4]))
+    images__ = sorted(images__)
+    images = []
+    for i in images__:
+        images.append(os.path.join(root, str(i)+'.jpg'))
     self.image_list = []
     for i in range(len(images)-1):
         im1 = images[i]
