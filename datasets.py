@@ -318,7 +318,7 @@ class ChairsSDHomTest(ChairsSDHom):
         super(ChairsSDHomTest, self).__init__(args, is_cropped = is_cropped, root = root, dstype = 'test', replicates = replicates)
 
 class ImagesFromFolder(data.Dataset):
-  def __init__(self, args, is_cropped, root = '/path/to/frames/only/folder', iext = 'png', replicates = 1):
+  def __init__(self, args, is_cropped, root = '/path/to/frames/only/folder', iext = 'jpg', replicates = 1):
     self.args = args
     self.is_cropped = is_cropped
     self.crop_size = args.crop_size
@@ -329,10 +329,13 @@ class ImagesFromFolder(data.Dataset):
     images__ = []
     for i in images_:
         images__.append(int(os.path.basename(i)[:-4]))
+    # print("===========",images__)
     images__ = sorted(images__)
     images = []
     for i in images__:
         images.append(os.path.join(root, str(i)+'.jpg'))
+    # print(images)
+    # raise NotImplementedError
     self.image_list = []
     for i in range(len(images)-1):
         im1 = images[i]
@@ -364,6 +367,65 @@ class ImagesFromFolder(data.Dataset):
     images = list(map(cropper, images))
     
     images = np.array(images).transpose(3,0,1,2)
+    images = torch.from_numpy(images.astype(np.float32))
+
+    return [images], [torch.zeros(images.size()[0:1] + (2,) + images.size()[-2:])]
+
+  def __len__(self):
+    return self.size * self.replicates
+
+
+class ImagesFromFolderRe(data.Dataset):
+  def __init__(self, args, is_cropped, root='/path/to/frames/only/folder', iext='jpg', replicates=1):
+    self.args = args
+    self.is_cropped = is_cropped
+    self.crop_size = args.crop_size
+    self.render_size = args.inference_size
+    self.replicates = replicates
+
+    images_ = glob(join(root, '*.' + iext))
+    images__ = []
+    for i in images_:
+        images__.append(int(os.path.basename(i)[:-4]))
+    # print("===========",images__)
+    images__ = sorted(images__)
+    images = []
+    for i in images__:
+        images.append(os.path.join(root, str(i) + '.jpg'))
+    # print(images)
+    # raise NotImplementedError
+    self.image_list = []
+    for i in range(len(images) - 1):
+        im1 = images[i + 1]
+        im2 = images[i]
+        self.image_list += [[im1, im2]]
+
+    self.size = len(self.image_list)
+
+    self.frame_size = frame_utils.read_gen(self.image_list[0][0]).shape
+
+    if (self.render_size[0] < 0) or (self.render_size[1] < 0) or (self.frame_size[0] % 64) or (
+            self.frame_size[1] % 64):
+        self.render_size[0] = ((self.frame_size[0]) // 64) * 64
+        self.render_size[1] = ((self.frame_size[1]) // 64) * 64
+
+    args.inference_size = self.render_size
+
+  def __getitem__(self, index):
+    index = index % self.size
+
+    img1 = frame_utils.read_gen(self.image_list[index][0])
+    img2 = frame_utils.read_gen(self.image_list[index][1])
+
+    images = [img1, img2]
+    image_size = img1.shape[:2]
+    if self.is_cropped:
+        cropper = StaticRandomCrop(image_size, self.crop_size)
+    else:
+        cropper = StaticCenterCrop(image_size, self.render_size)
+    images = list(map(cropper, images))
+
+    images = np.array(images).transpose(3, 0, 1, 2)
     images = torch.from_numpy(images.astype(np.float32))
 
     return [images], [torch.zeros(images.size()[0:1] + (2,) + images.size()[-2:])]
